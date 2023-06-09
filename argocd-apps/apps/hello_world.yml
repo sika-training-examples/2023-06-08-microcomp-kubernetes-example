@@ -24,4 +24,5 @@ spec:
       releaseName: hello-world
       values: |
         host: hello-world.sikademo3.uk
-        text: "Hello Microcomp!"
+        TEXT: "Hello Microcomp!"
+        replicas: 3
