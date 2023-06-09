@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-prometheus
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  project: default
+  syncPolicy:
+    automated: {}
+    syncOptions:
+    - CreateNamespace=true
+    - ServerSideApply=true
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 45.20.0
+    helm:
+      releaseName: prometheus
+      values: |
+        alertmanager:
+          enabled: false
+        defaultRules:
+          rules:
+            alertmanager: false
+        grafana:
+          adminPassword: asdfasdfasdf
+          defaultDashboardsEnabled: true
+          grafana.ini:
+            server:
+              root_url: https://grafana.sikademo3.uk
+          ingress:
+            annotations:
+              kubernetes.io/ingress.class: nginx
+              cert-manager.io/cluster-issuer: letsencrypt
+            enabled: true
+            hosts:
+            - grafana.sikademo3.uk
+            paths:
+            - /
+            tls:
+            - hosts:
+              - grafana.sikademo3.uk
+              secretName: grafana.sikademo3.uk-tls
+          serviceMonitor:
+            selfMonitor: true
+        prometheus:
+          fullnameOverride: prometheus
+          prometheusSpec:
+            podMonitorSelectorNilUsesHelmValues: false
+            ruleSelectorNilUsesHelmValues: false
+            serviceMonitorSelectorNilUsesHelmValues: false
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  accessModes:
+                  - ReadWriteOnce
+                  resources:
+                    requests:
+                      storage: 5Gi
+                  storageClassName: hostpath
+          serviceMonitor:
+            selfMonitor: true
