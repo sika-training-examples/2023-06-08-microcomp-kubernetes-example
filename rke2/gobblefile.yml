@@ -1,0 +1,76 @@
+meta:
+  schema_version: 3
+hosts:
+  node:
+    - ssh_target: root@192.168.192.54
+plays:
+  - name: Setup Cluster
+    hosts: [node]
+    tags: [cluster]
+    tasks:
+      - name: Create /etc/rancher/rke2 dir
+        command:
+          cmd: mkdir -p /etc/rancher/rke2
+
+      - name: Create /etc/rancher/rke2/config.yaml
+        template:
+          path: /etc/rancher/rke2/config.yaml
+          template: |
+            disable:
+              - rke2-ingress-nginx
+
+      - name: Install slu
+        command:
+          cmd: curl -fsSL https://raw.githubusercontent.com/sikalabs/slu/master/install.sh | sh
+
+      - name: Install RKE2
+        command:
+          cmd: curl -sfL https://get.rke2.io | INSTALL_RKE2_METHOD='tar' INSTALL_RKE2_VERSION="v1.26.3+rke2r1" sh -
+
+      - name: Enable RKE2
+        command:
+          cmd: systemctl enable rke2-server.service
+
+      - name: Start RKE2
+        command:
+          cmd: systemctl start rke2-server.service
+
+      - name: Install kubectl (using slu)
+        command:
+          cmd: slu install-bin kubectl
+
+      - name: Install helm (using slu)
+        command:
+          cmd: slu install-bin helm
+
+      - name: Create ~/.kube dir
+        command:
+          cmd: mkdir -p /root/.kube
+
+      - name: Create ~/.kube/config
+        command:
+          cmd: rm -rf /root/.kube/config && ln -s /etc/rancher/rke2/rke2.yaml /root/.kube/config
+
+      - name: Try it!
+        print:
+          template: |
+            ssh root@192.168.192.54 kubectl get nodes
+
+  - name: Get Kubeconfig
+    hosts: [node]
+    tags: [get-kubeconfig]
+    tasks:
+      - name: Copy ~/.kube/config
+        cp:
+          remote_src: /root/.kube/config
+          local_dst: ./kubeconfig.yml
+      - name: Replace 127.0.0.1 with public endpoint
+        replace_string_in_local_file:
+          path: ./kubeconfig.yml
+          find: 127.0.0.1
+          replace: 192.168.192.54
+      - name: Replace default with joh
+        replace_string_in_local_file:
+          path: ./kubeconfig.yml
+          find: default
+          replace: rke2-training
