@@ -9,6 +9,7 @@ install-ingress-nginx:
 		--set controller.kind=DaemonSet \
 		--set controller.hostPort.enabled=true \
 		--set controller.metrics.enabled=true \
+		--set controller.metrics.serviceMonitor.enabled=true \
 		--set controller.config.use-proxy-protocol=false \
 		--wait
 
