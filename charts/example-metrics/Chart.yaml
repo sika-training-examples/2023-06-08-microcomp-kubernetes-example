@@ -1,0 +1,5 @@
+apiVersion: v2
+name: example-metrics
+description: Example metrics for demo app
+type: application
+version: 0.0.0

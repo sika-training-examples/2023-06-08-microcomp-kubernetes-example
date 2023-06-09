@@ -1,0 +1,11 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  jobLabel: {{ .Release.Name }}
+  endpoints:
+    - port: http
+  selector:
+    matchLabels:
+      {{ .Values.matchLabelsKey }}: {{ .Values.matchLabelsValue }}

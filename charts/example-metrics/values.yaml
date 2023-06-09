@@ -1,0 +1,3 @@
+# Required
+matchLabelsKey: release
+matchLabelsValue: example-server-with-metrics

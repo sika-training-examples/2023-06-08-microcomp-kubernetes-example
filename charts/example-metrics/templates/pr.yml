@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  groups:
+    - name: metrics-example.rules
+      rules:
+        - alert: ExampleAlert
+          annotations:
+            message: "Example Alert"
+          expr: rate(example_requests[1m]) > 2
+          labels:
+            severity: none
