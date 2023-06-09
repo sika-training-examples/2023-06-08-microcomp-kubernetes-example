@@ -1,0 +1,5 @@
+config:
+  clients:
+    - url: https://loki.sikademo3.uk/loki/api/v1/push
+extraArgs:
+  - -client.external-labels=cluster=minikube
